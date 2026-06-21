@@ -1,0 +1,87 @@
+%% Clean publication-quality plot
+clc; clear; close all;
+
+%% Load data
+data_current = load('Data/currents_iq_step.mat');
+data_speed = load('Data/speeds_step.mat');
+
+%% Number of samples
+N = 65;
+
+%% Time vector
+t = data_current.current_direct_backeuler.Time(1:N);
+
+%% Signals
+iq_ref              = data_current.current_ref.Data(1:N);
+iq_direct_back      = data_current.current_direct_backeuler.Data(1:N);
+iq_direct_tustin    = data_current.current_direct_tustin.Data(1:N);
+iq_emulation_back   = data_current.current_emulation_backeuler.Data(1:N);
+iq_emulation_tustin = data_current.current_emulation_tustin.Data(1:N);
+
+
+
+
+%% Figure - bigger canvas so fonts have room
+fig = figure('Color','white','Units','pixels','Position',[100 100 800 420]);
+
+%% Axes
+ax = axes('Parent', fig);
+hold(ax,'on');
+box(ax,'on');
+grid(ax,'on');
+
+%% Clean white background, light grid
+ax.Color = 'white';
+ax.XColor = [0 0 0];
+ax.YColor = [0 0 0];
+ax.GridColor = [0.75 0.75 0.75];
+ax.GridAlpha = 0.6;
+ax.GridLineStyle = '--';
+ax.LineWidth = 0.9;
+ax.FontSize = 13;
+ax.TickLabelInterpreter = 'latex';
+
+%% Explicit, distinguishable colors
+c_ref   = [0.20 0.20 0.20];   % dark slate gray
+c_db    = [0.85 0.33 0.10];   % burnt orange
+c_dt    = [0.00 0.45 0.70];   % steel blue
+c_eb    = [0.00 0.55 0.35];   % teal green
+c_et    = [0.55 0.30 0.65];   % muted purple
+
+%% Plot signals
+plot(t, iq_ref,              '-',  'LineWidth', 1.8, 'Color', c_ref);
+plot(t, iq_direct_back,      '--', 'LineWidth', 1.4, 'Color', c_db);
+plot(t, iq_direct_tustin,    ':',  'LineWidth', 1.8, 'Color', c_dt);
+plot(t, iq_emulation_back,   '-.', 'LineWidth', 1.4, 'Color', c_eb);
+plot(t, iq_emulation_tustin, '-',  'LineWidth', 1.2, 'Color', c_et);
+
+%% Labels
+xlabel('$t$ [s]', 'Interpreter','latex', 'FontSize',15);
+ylabel('$i_q(t)$ [A]', 'Interpreter','latex', 'FontSize',15);
+
+%% Legend
+lgd = legend( ...
+    '$i_{q,\mathrm{ref}}$', ...
+    'Direct Backward Euler', ...
+    'Direct Tustin', ...
+    'Emulation Backward Euler', ...
+    'Emulation Tustin');
+set(lgd, ...
+    'Interpreter','latex', ...
+    'FontSize',13, ...
+    'Box','on', ...
+    'Color','white', ...
+    'EdgeColor',[0 0 0], ...
+    'TextColor',[0 0 0], ...
+    'Location','southeast');
+%% Axis limits
+xlim([t(1) t(end)]);
+
+%% Renderer + export settings
+set(fig, 'Renderer', 'painters');
+set(fig, 'InvertHardcopy', 'off');
+
+%% Export PDF (let exportgraphics handle padding)
+exportgraphics(fig, 'iq_current_blocked_rotor.pdf', ...
+    'ContentType', 'vector', ...
+    'BackgroundColor', 'white');
